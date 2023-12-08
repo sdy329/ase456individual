@@ -30,7 +30,7 @@ How to use the program found in [user_manual_ver1.md](documents/manual/user_manu
 ## Running the tests
 
 ```
-pytest test/
+flutter test
 ```
 
 ## Authors
