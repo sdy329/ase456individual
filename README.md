@@ -16,7 +16,13 @@ The following features are currently implemented:
 Install dependencies
 
 ``` 
-pip install -r requirements.txt
+flutter pub get
+```
+
+Run the app
+
+```
+flutter run
 ```
 
 How to use the program found in [user_manual_ver1.md](documents/manual/user_manual_ver1.md)
