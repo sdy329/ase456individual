@@ -24,7 +24,7 @@ class _QueryScreenState extends State<QueryScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 1),
       ),
     );
   }
@@ -85,16 +85,3 @@ class _QueryScreenState extends State<QueryScreen> {
     );
   }
 }
-
-/*
-child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          elevation: 4.0, // shadow depth
-          child: Container(
-            width: 200, height: 200,
-            child: Center(child: Text("Hello")),
-          ),
-        ),
-        */
