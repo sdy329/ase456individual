@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class RecordScreen extends StatefulWidget {
   const RecordScreen({Key? key}) : super(key: key);
@@ -14,17 +16,19 @@ class _RecordScreenState extends State<RecordScreen> {
   final _taskController = TextEditingController();
   final _tagController = TextEditingController();
 
-  var _date = '';
+  DateTime? _date;
   var _from = '';
   var _to = '';
   String _task = '';
   String _tag = '';
+  int _duration = 0;
+  bool _submitting = false;
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 1),
       ),
     );
   }
@@ -37,6 +41,76 @@ class _RecordScreenState extends State<RecordScreen> {
       return false;
     }
     return true;
+  }
+
+  int _calculateDuration(String fromTime, String toTime) {
+    int fromHour = int.parse(fromTime.split(':')[0]);
+    int fromMinute = int.parse(fromTime.split(':')[1]);
+    int toHour = int.parse(toTime.split(':')[0]);
+    int toMinute = int.parse(toTime.split(':')[1]);
+
+    int hourDiff = toHour - fromHour;
+    int minuteDiff = toMinute - fromMinute;
+
+    return hourDiff * 60 + minuteDiff;
+  }
+
+  void _submitRecord() async {
+    _submitting = true;
+    try {
+      if (_date == null && _dateController.text.isEmpty) {
+        _showSnackBar('Date is empty');
+        _submitting = false;
+        return;
+      } else if (_date == null && _dateController.text.isNotEmpty) {
+        _showSnackBar('Date is invalid');
+        _submitting = false;
+        return;
+      }
+      if (_from.isEmpty) {
+        _showSnackBar('From is empty');
+        _submitting = false;
+        return;
+      }
+      if (_to.isEmpty) {
+        _showSnackBar('To is empty');
+        _submitting = false;
+        return;
+      }
+      if (_task.isEmpty) {
+        _showSnackBar('Task is empty');
+        _submitting = false;
+        return;
+      }
+      if (_tag.isEmpty) {
+        _showSnackBar('Tag is empty');
+        _submitting = false;
+        return;
+      }
+      if (!_validateTime(_from, _to)) {
+        _showSnackBar('To time is before from time');
+        _submitting = false;
+        return;
+      }
+      _duration = _calculateDuration(_from, _to);
+
+      Map<String, dynamic> recordData = {
+        'date': _date,
+        'from': _from,
+        'to': _to,
+        'task': _task,
+        'tag': _tag,
+        'duration': _duration,
+      };
+
+      await FirebaseFirestore.instance.collection('records').add(recordData);
+
+      _showSnackBar('Record submitted successfully');
+      _submitting = false;
+    } catch (e) {
+      _showSnackBar('Error submitting record: $e');
+      _submitting = false;
+    }
   }
 
   @override
@@ -66,12 +140,15 @@ class _RecordScreenState extends State<RecordScreen> {
                       if (value.isEmpty) return;
                       try {
                         if (value == 'today') {
-                          _date = DateTime.now().toString().substring(0, 10);
+                          _date = DateFormat('yyyy/MM/dd').parse(DateTime.now()
+                              .toString()
+                              .substring(0, 10)
+                              .replaceAll('-', '/'));
                         } else {
-                          _date = value.replaceAll('/', '-');
+                          _date = DateFormat('yyyy/MM/dd').parse(value);
                         }
                       } catch (e) {
-                        _showSnackBar('Invalid date format');
+                        return;
                       }
                     },
                   ),
@@ -165,10 +242,8 @@ class _RecordScreenState extends State<RecordScreen> {
                     onChanged: (String value) async {
                       if (value.isEmpty) return;
                       if (value.contains(' ')) {
-                        _showSnackBar('Invalid tag format');
                         return;
                       } else if (value[0] != ':') {
-                        _showSnackBar('Invalid tag format');
                         return;
                       }
                       _tag = value;
@@ -182,32 +257,9 @@ class _RecordScreenState extends State<RecordScreen> {
               width: fullWidth,
               child: ElevatedButton(
                 onPressed: () {
-                  if (_date.isEmpty) {
-                    _showSnackBar('Date is empty');
-                    return;
-                  }
-                  if (_from.isEmpty) {
-                    _showSnackBar('From is empty');
-                    return;
-                  }
-                  if (_to.isEmpty) {
-                    _showSnackBar('To is empty');
-                    return;
-                  }
-                  if (_task.isEmpty) {
-                    _showSnackBar('Task is empty');
-                    return;
-                  }
-                  if (_tag.isEmpty) {
-                    _showSnackBar('Tag is empty');
-                    return;
-                  }
-                  if (!_validateTime(_from, _to)) {
-                    _showSnackBar('To time is before from time');
-                    return;
-                  }
-
-                  _showSnackBar('$_date $_from $_to \'$_task\' $_tag');
+                  if (_submitting) return;
+                  _showSnackBar('Submitting record');
+                  _submitRecord();
                 },
                 child: const Text('Submit'),
               ),

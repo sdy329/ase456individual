@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class QueryScreen extends StatefulWidget {
   const QueryScreen({Key? key}) : super(key: key);
@@ -9,14 +11,6 @@ class QueryScreen extends StatefulWidget {
 
 class _QueryScreenState extends State<QueryScreen> {
   final _queryController = TextEditingController();
-
-  var sampleList = [
-    'Item 1',
-    'Item 2',
-    'Item 3',
-    'Item 4',
-    'Item 5',
-  ];
 
   var queryList = [];
 
@@ -29,16 +23,65 @@ class _QueryScreenState extends State<QueryScreen> {
     );
   }
 
-  void _searchList(String query) {
-    List<String> searchList = [];
-    for (int i = 0; i < sampleList.length; i++) {
-      if (sampleList[i].contains(query)) {
-        searchList.add(sampleList[i]);
+  void _searchDatabaseLocally(String query) async {
+    try {
+      CollectionReference records =
+          FirebaseFirestore.instance.collection('records');
+      QuerySnapshot<Map<String, dynamic>> querySnapshot =
+          await records.get() as QuerySnapshot<Map<String, dynamic>>;
+
+      List<Map<String, dynamic>> allResults = querySnapshot.docs
+          .map((DocumentSnapshot<Map<String, dynamic>> document) =>
+              document.data()!)
+          .toList();
+
+      List<Map<String, dynamic>> searchResults = [];
+
+      for (var result in allResults) {
+        if (_containsIgnoreCase(result['task'], query) ||
+            result['tag'] == query ||
+            (_isDateFormat(query) &&
+                _formatTimestamp(result['date']) == query) ||
+            (query == 'today' && _isToday(result['date']))) {
+          result['date'] = _formatTimestamp(result['date']);
+          searchResults.add(result);
+        }
       }
+
+      setState(() {
+        queryList = searchResults;
+      });
+
+      _showSnackBar('Searching for $query');
+    } catch (e) {
+      _showSnackBar('Error searching database: $e');
     }
-    setState(() {
-      queryList = searchList;
-    });
+  }
+
+  bool _isToday(Timestamp timestamp) {
+    DateTime dateTime = timestamp.toDate();
+    DateTime today = DateTime.now();
+    return dateTime.year == today.year &&
+        dateTime.month == today.month &&
+        dateTime.day == today.day;
+  }
+
+  bool _containsIgnoreCase(String text, String query) {
+    return text.toLowerCase().contains(query.toLowerCase());
+  }
+
+  bool _isDateFormat(String input) {
+    try {
+      DateFormat('yyyy/MM/dd').parse(input);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  String _formatTimestamp(Timestamp timestamp) {
+    DateTime dateTime = timestamp.toDate();
+    return DateFormat('yyyy/MM/dd').format(dateTime);
   }
 
   @override
@@ -55,8 +98,7 @@ class _QueryScreenState extends State<QueryScreen> {
                 hintText: 'Enter query',
               ),
               onSubmitted: (String value) {
-                _searchList(value);
-                _showSnackBar('Searching for $value');
+                _searchDatabaseLocally(value);
               },
             ),
           ),
@@ -71,10 +113,9 @@ class _QueryScreenState extends State<QueryScreen> {
                   ),
                   elevation: 4.0,
                   child: ListTile(
-                    title: Text(queryList[index]),
-                    onTap: () {
-                      _showSnackBar(queryList[index] + ' tapped');
-                    },
+                    title: Text(queryList[index]['task'].toString()),
+                    subtitle: Text(
+                        'Date: ${queryList[index]['date']} From: ${queryList[index]['from']} To: ${queryList[index]['to']} Tag: ${queryList[index]['tag']}'),
                   ),
                 );
               },
