@@ -47,6 +47,62 @@
         } 
     },
     "version2": {
-        
+        "header" : {
+            "cloc_url"           : "github.com/AlDanial/cloc",
+            "cloc_version"       : "1.98",
+            "elapsed_seconds"    : 0.0121300220489502,
+            "n_files"            : 7,
+            "n_lines"            : 833,
+            "files_per_second"   : 577.080566857323,
+            "lines_per_second"   : 68672.5874560214
+        },
+        ".\\lib\\screens\\record.dart" :{
+            "blank": 15,
+            "comment": 3,
+            "code": 254,
+            "language": "Dart"
+        },
+        ".\\lib\\screens\\report.dart" :{
+            "blank": 15,
+            "comment": 0,
+            "code": 159,
+            "language": "Dart"
+        },
+        ".\\lib\\screens\\query.dart" :{
+            "blank": 16,
+            "comment": 0,
+            "code": 112,
+            "language": "Dart"
+        },
+        ".\\lib\\navigation.dart" :{
+            "blank": 5,
+            "comment": 0,
+            "code": 70,
+            "language": "Dart"
+        },
+        ".\\lib\\screens\\priority.dart" :{
+            "blank": 12,
+            "comment": 0,
+            "code": 67,
+            "language": "Dart"
+        },
+        ".\\lib\\firebase_options.dart" :{
+            "blank": 5,
+            "comment": 12,
+            "code": 64,
+            "language": "Dart"
+        },
+        ".\\lib\\main.dart" :{
+            "blank": 3,
+            "comment": 0,
+            "code": 21,
+            "language": "Dart"
+        },
+        "SUM": {
+            "blank": 71,
+            "comment": 15,
+            "code": 747,
+            "nFiles": 7
+        } 
     }
 }

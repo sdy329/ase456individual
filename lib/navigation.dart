@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'screens/record.dart';
 import 'screens/query.dart';
+import 'screens/report.dart';
+import 'screens/priority.dart';
 
 class Navigation extends StatefulWidget {
   const Navigation({Key? key}) : super(key: key);
@@ -31,8 +33,8 @@ class _NavigationState extends State<Navigation> {
       body: [
         const RecordScreen(),
         const QueryScreen(),
-        //ReportScreen(),
-        //PriorityScreen(),
+        const ReportScreen(),
+        const PriorityScreen(),
       ][tab],
       drawer: Drawer(
         child: ListView(
@@ -50,7 +52,7 @@ class _NavigationState extends State<Navigation> {
               onTap: () {
                 selectItem(1, 'Query');
               },
-            ), /*
+            ),
             ListTile(
               leading: const Icon(Icons.view_timeline_outlined),
               title: const Text('Report'),
@@ -64,7 +66,7 @@ class _NavigationState extends State<Navigation> {
               onTap: () {
                 selectItem(3, 'Priority');
               },
-            ),*/
+            ),
           ],
         ),
       ),
